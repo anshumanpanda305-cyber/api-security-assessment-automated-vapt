@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VAPT Retesting & Remediation Verification Report</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { border-bottom: 1px solid #334155; padding-bottom: 1.5rem; margin-bottom: 2rem; }
+        .badge { background: #10b981; color: #022c22; padding: 4px 12px; border-radius: 9999px; font-weight: bold; font-size: 0.85rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 8px; text-align: center; }
+        .stat-num { font-size: 2.25rem; font-weight: 800; margin: 0.25rem 0; }
+        .stat-label { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #1e293b; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0b1120; font-size: 0.85rem; text-transform: uppercase; color: #94a3b8; }
+        h2 { margin-top: 2rem; font-size: 1.3rem; color: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="badge">Retest Verification Audit</span>
+            <h1 style="font-size: 2rem; margin-top: 0.5rem;">Security Fix Verification & False Positive Reduction</h1>
+            <p style="color: #94a3b8;">Automated verification comparing baseline findings against hardened API implementation.</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Baseline Findings</div>
+                <div class="stat-num" style="color: #f97316;">16</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Successfully Resolved</div>
+                <div class="stat-num" style="color: #10b981;">16</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Persistent / Unfixed</div>
+                <div class="stat-num" style="color: #ef4444;">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Remediation Rate</div>
+                <div class="stat-num" style="color: #6366f1;">100.0%</div>
+            </div>
+        </div>
+
+        <h2>Verified Resolved Vulnerabilities</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Vulnerability ID</th>
+                    <th>Title</th>
+                    <th>OWASP Category</th>
+                    <th>Severity</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-AUTH-001</code></td>
+                <td><strong>JWT Signature Bypass via 'alg: none' Algorithm</strong></td>
+                <td>API2:2023 - Broken Authentication</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-BOLA-001</code></td>
+                <td><strong>Broken Object Level Authorization (BOLA) in Document Retrieval</strong></td>
+                <td>API1:2023 - Broken Object Level Authorization</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-BFLA-001</code></td>
+                <td><strong>Broken Function Level Authorization - Unrestricted Admin Access</strong></td>
+                <td>API5:2023 - Broken Function Level Authorization</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-BFLA-002</code></td>
+                <td><strong>Unauthorized Administrative Database Export Trigger</strong></td>
+                <td>API5:2023 - Broken Function Level Authorization</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-SQLI-001</code></td>
+                <td><strong>SQL Injection in Product Search Parameter ('q')</strong></td>
+                <td>OWASP API Top 10 - Injection Flaws</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-CMD-001</code></td>
+                <td><strong>Remote OS Command Injection in Diagnostic Ping Utility</strong></td>
+                <td>OWASP API Top 10 - Injection Flaws</td>
+                <td><span style="color: #cbd5e1;">CRITICAL</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-AUTH-002</code></td>
+                <td><strong>Weak / Guessable JWT HMAC Secret Key</strong></td>
+                <td>API2:2023 - Broken Authentication</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-BOLA-002</code></td>
+                <td><strong>Broken Object Level Authorization (BOLA) in Order Receipts</strong></td>
+                <td>API1:2023 - Broken Object Level Authorization</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-BOLA-003</code></td>
+                <td><strong>Insecure Direct Object Reference (IDOR) on User Profile Endpoint</strong></td>
+                <td>API1:2023 - Broken Object Level Authorization</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-PROP-001</code></td>
+                <td><strong>Excessive Data Exposure in User Profile Response</strong></td>
+                <td>API3:2023 - Broken Object Property Level Authorization</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-PROP-002</code></td>
+                <td><strong>Mass Assignment Enabling Privilege Escalation</strong></td>
+                <td>API3:2023 - Broken Object Property Level Authorization</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-MISC-001</code></td>
+                <td><strong>Insecure Cross-Origin Resource Sharing (CORS) Policy</strong></td>
+                <td>API8:2023 - Security Misconfiguration</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-MISC-004</code></td>
+                <td><strong>Unauthenticated Debug Configuration Endpoint Disclosed</strong></td>
+                <td>API8:2023 - Security Misconfiguration</td>
+                <td><span style="color: #cbd5e1;">HIGH</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-RATE-001</code></td>
+                <td><strong>Missing Rate Limiting on Authentication Endpoint</strong></td>
+                <td>API4:2023 - Unrestricted Resource Consumption</td>
+                <td><span style="color: #cbd5e1;">MEDIUM</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-MISC-002</code></td>
+                <td><strong>Missing Standard Defense-in-Depth HTTP Security Headers</strong></td>
+                <td>API8:2023 - Security Misconfiguration</td>
+                <td><span style="color: #cbd5e1;">LOW</span></td>
+            </tr>
+            
+            <tr>
+                <td><span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #10b981;">RESOLVED</span></td>
+                <td><code>VAPT-MISC-003</code></td>
+                <td><strong>Server Technology & Version Fingerprint Disclosure</strong></td>
+                <td>API8:2023 - Security Misconfiguration</td>
+                <td><span style="color: #cbd5e1;">INFO</span></td>
+            </tr>
+            
+            </tbody>
+        </table>
+
+        
+    </div>
+</body>
+</html>
+        

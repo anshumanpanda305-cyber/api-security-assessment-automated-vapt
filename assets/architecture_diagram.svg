@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="560" rx="12" fill="url(#bg2)" stroke="#334155" stroke-width="2"/>
+
+  <!-- Title -->
+  <text x="480" y="40" fill="#f8fafc" font-size="20" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">API Security Assessment &amp; Automated VAPT Framework Architecture</text>
+  <text x="480" y="62" fill="#94a3b8" font-size="12" font-family="-apple-system, sans-serif" text-anchor="middle">Modular Penetration Testing Pipeline &bull; Ethical Scope Boundary &bull; Automated Retest Verification</text>
+
+  <!-- COLUMN 1: Orchestrator & Scope -->
+  <g transform="translate(30, 90)">
+    <rect width="260" height="430" rx="8" fill="#1e293b" stroke="#475569" filter="url(#cardShadow)"/>
+    <rect width="260" height="35" rx="8" fill="#312e81"/>
+    <text x="130" y="23" fill="#c7d2fe" font-size="13" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">1. CORE SCAN ENGINE</text>
+
+    <!-- Scope Guard Box -->
+    <rect x="15" y="55" width="230" height="65" rx="6" fill="#0f172a" stroke="#10b981"/>
+    <text x="25" y="75" fill="#34d399" font-size="11" font-weight="700">Scope Guard &amp; Whitelist</text>
+    <text x="25" y="93" fill="#94a3b8" font-size="10">Restricts scans strictly to localhost</text>
+    <text x="25" y="108" fill="#94a3b8" font-size="10">or authorized target whitelist</text>
+
+    <!-- Orchestrator Box -->
+    <rect x="15" y="135" width="230" height="65" rx="6" fill="#0f172a" stroke="#6366f1"/>
+    <text x="25" y="155" fill="#a5b4fc" font-size="11" font-weight="700">VAPT Scan Orchestrator</text>
+    <text x="25" y="173" fill="#94a3b8" font-size="10">Sequential &amp; targeted module runner,</text>
+    <text x="25" y="188" fill="#94a3b8" font-size="10">context &amp; token lifecycle manager</text>
+
+    <!-- Requester Box -->
+    <rect x="15" y="215" width="230" height="65" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+    <text x="25" y="235" fill="#fcd34d" font-size="11" font-weight="700">HTTP Client &amp; Proxy Router</text>
+    <text x="25" y="253" fill="#94a3b8" font-size="10">Raw wire format PoC generation,</text>
+    <text x="25" y="268" fill="#94a3b8" font-size="10">Burp Suite upstream proxy support</text>
+
+    <!-- CLI Entry -->
+    <rect x="15" y="295" width="230" height="50" rx="6" fill="#0f172a" stroke="#334155"/>
+    <text x="25" y="315" fill="#e2e8f0" font-size="11" font-weight="700">CLI Entry Point &amp; Config</text>
+    <text x="25" y="333" fill="#94a3b8" font-size="10">vapt_cli.py &bull; config.yaml &bull; flags</text>
+
+    <!-- Burp Integration -->
+    <rect x="15" y="360" width="230" height="55" rx="6" fill="#0f172a" stroke="#f97316"/>
+    <text x="25" y="380" fill="#fb923c" font-size="11" font-weight="700">Burp Suite Integration</text>
+    <text x="25" y="398" fill="#94a3b8" font-size="10">127.0.0.1:8080 &bull; Raw .http PoCs</text>
+  </g>
+
+  <!-- COLUMN 2: Security Assessment Modules -->
+  <g transform="translate(320, 90)">
+    <rect width="320" height="430" rx="8" fill="#1e293b" stroke="#475569" filter="url(#cardShadow)"/>
+    <rect width="320" height="35" rx="8" fill="#065f46"/>
+    <text x="160" y="23" fill="#a7f3d0" font-size="13" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">2. OWASP VAPT MODULES</text>
+
+    <g transform="translate(15, 48)">
+      <!-- Module 1 -->
+      <rect y="0" width="290" height="40" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+      <text x="10" y="17" fill="#fca5a5" font-size="10" font-weight="700">API2: Broken Authentication &amp; JWT</text>
+      <text x="10" y="31" fill="#94a3b8" font-size="9">alg: none bypass &bull; weak secret cracking &bull; expiry check</text>
+
+      <!-- Module 2 -->
+      <rect y="46" width="290" height="40" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+      <text x="10" y="63" fill="#fca5a5" font-size="10" font-weight="700">API1: Broken Object Level Auth (BOLA/IDOR)</text>
+      <text x="10" y="77" fill="#94a3b8" font-size="9">Multi-user cross-tenant tests (/documents, /orders, /users)</text>
+
+      <!-- Module 3 -->
+      <rect y="92" width="290" height="40" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+      <text x="10" y="109" fill="#fca5a5" font-size="10" font-weight="700">API5: Broken Function Level Auth (BFLA)</text>
+      <text x="10" y="123" fill="#94a3b8" font-size="9">Vertical escalation on /admin/users &amp; /admin/export-db</text>
+
+      <!-- Module 4 -->
+      <rect y="138" width="290" height="40" rx="4" fill="#0f172a" stroke="#f97316" stroke-width="1"/>
+      <text x="10" y="155" fill="#fdba74" font-size="10" font-weight="700">API3: Mass Assignment &amp; Data Exposure</text>
+      <text x="10" y="169" fill="#94a3b8" font-size="9">Privilege column updates (is_admin, balance) &amp; hash leakage</text>
+
+      <!-- Module 5 -->
+      <rect y="184" width="290" height="40" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+      <text x="10" y="201" fill="#fca5a5" font-size="10" font-weight="700">CWE-89: SQL Injection</text>
+      <text x="10" y="215" fill="#94a3b8" font-size="9">UNION &amp; Error extraction on /products/search?q=</text>
+
+      <!-- Module 6 -->
+      <rect y="230" width="290" height="40" rx="4" fill="#0f172a" stroke="#ef4444" stroke-width="1"/>
+      <text x="10" y="247" fill="#fca5a5" font-size="10" font-weight="700">CWE-78: OS Command Injection</text>
+      <text x="10" y="261" fill="#94a3b8" font-size="9">Arbitrary command execution on /tools/ping?host=</text>
+
+      <!-- Module 7 -->
+      <rect y="276" width="290" height="40" rx="4" fill="#0f172a" stroke="#f97316" stroke-width="1"/>
+      <text x="10" y="293" fill="#fdba74" font-size="10" font-weight="700">API8: Security Misconfiguration</text>
+      <text x="10" y="307" fill="#94a3b8" font-size="9">Wildcard CORS &bull; Security headers &bull; Debug leak</text>
+
+      <!-- Module 8 -->
+      <rect y="322" width="290" height="40" rx="4" fill="#0f172a" stroke="#eab308" stroke-width="1"/>
+      <text x="10" y="339" fill="#fde047" font-size="10" font-weight="700">API4: Unrestricted Resource Consumption</text>
+      <text x="10" y="353" fill="#94a3b8" font-size="9">Missing rate limiting &amp; brute-force protection</text>
+    </g>
+  </g>
+
+  <!-- COLUMN 3: Target API & Retest Engine -->
+  <g transform="translate(670, 90)">
+    <rect width="260" height="430" rx="8" fill="#1e293b" stroke="#475569" filter="url(#cardShadow)"/>
+    <rect width="260" height="35" rx="8" fill="#991b1b"/>
+    <text x="130" y="23" fill="#fecaca" font-size="13" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">3. TARGET &amp; RETESTING</text>
+
+    <!-- Target API Testbed -->
+    <rect x="15" y="55" width="230" height="100" rx="6" fill="#0f172a" stroke="#dc2626"/>
+    <text x="25" y="75" fill="#f87171" font-size="11" font-weight="700">ShopVault REST API (Flask)</text>
+    <text x="25" y="93" fill="#94a3b8" font-size="10">&bull; SQLite database &amp; JWT auth</text>
+    <text x="25" y="108" fill="#94a3b8" font-size="10">&bull; Mode 1: Vulnerable testbed</text>
+    <text x="25" y="123" fill="#94a3b8" font-size="10">&bull; Mode 2: Hardened SECURE mode</text>
+    <text x="25" y="138" fill="#34d399" font-size="10">&bull; Toggleable via VAPT_SECURE_MODE</text>
+
+    <!-- Reporting Engine -->
+    <rect x="15" y="170" width="230" height="110" rx="6" fill="#0f172a" stroke="#6366f1"/>
+    <text x="25" y="190" fill="#a5b4fc" font-size="11" font-weight="700">Multi-Format Reporting Engine</text>
+    <text x="25" y="208" fill="#94a3b8" font-size="10">&bull; Interactive HTML Dashboard</text>
+    <text x="25" y="223" fill="#94a3b8" font-size="10">&bull; Machine-readable JSON Export</text>
+    <text x="25" y="238" fill="#94a3b8" font-size="10">&bull; Executive Markdown Summary</text>
+    <text x="25" y="253" fill="#94a3b8" font-size="10">&bull; Reproducible Burp wire PoCs</text>
+    <text x="25" y="268" fill="#94a3b8" font-size="10">&bull; CVSS v3.1 &amp; Remediation guidance</text>
+
+    <!-- Retest Engine -->
+    <rect x="15" y="295" width="230" height="115" rx="6" fill="#0f172a" stroke="#10b981"/>
+    <text x="25" y="315" fill="#34d399" font-size="11" font-weight="700">Retesting &amp; Verification Suite</text>
+    <text x="25" y="333" fill="#94a3b8" font-size="10">&bull; Compares Baseline vs Retest</text>
+    <text x="25" y="348" fill="#94a3b8" font-size="10">&bull; Classifies: Resolved, Persistent, New</text>
+    <text x="25" y="363" fill="#94a3b8" font-size="10">&bull; Calculates % Remediation Rate</text>
+    <text x="25" y="378" fill="#94a3b8" font-size="10">&bull; Verifies 0 False Positives</text>
+    <text x="25" y="393" fill="#94a3b8" font-size="10">&bull; Generates HTML audit certificate</text>
+  </g>
+</svg>

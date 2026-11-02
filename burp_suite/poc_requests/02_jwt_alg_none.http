@@ -1,0 +1,5 @@
+GET /api/v1/documents/1 HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Authorization: Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiI0IiwidXNlcl9pZCI6NCwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlzX2FkbWluIjp0cnVlfQ.
+Accept: application/json

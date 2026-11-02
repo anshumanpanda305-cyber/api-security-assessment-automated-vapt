@@ -1,0 +1,42 @@
+# API Security Assessment & Automated VAPT Framework Configuration
+
+target:
+  base_url: "http://127.0.0.1:5000"
+  # Security Scope Guard: Scanner strictly blocks any host not present in this list or resolving to loopback
+  authorized_hosts:
+    - "127.0.0.1"
+    - "localhost"
+    - "::1"
+
+proxy:
+  # Route all scanner requests through Burp Suite proxy for live interception and manual Repeater inspection
+  enabled: false
+  url: "http://127.0.0.1:8080"
+
+test_accounts:
+  # Alice: Standard user (Victim in BOLA scenarios)
+  alice:
+    username: "alice"
+    password: "Password123!"
+    role: "user"
+    id: 1
+
+  # Bob: Standard user (Attacker in BOLA / BFLA scenarios)
+  bob:
+    username: "bob"
+    password: "Password123!"
+    role: "user"
+    id: 2
+
+  # Admin: System Administrator
+  admin:
+    username: "admin"
+    password: "AdminSecurePass!"
+    role: "admin"
+    id: 4
+
+scanner:
+  timeout: 8
+  max_threads: 4
+  output_dir: "reports"
+  wordlists_dir: "vapt_framework/wordlists"

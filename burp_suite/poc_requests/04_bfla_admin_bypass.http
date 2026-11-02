@@ -1,0 +1,5 @@
+GET /api/v1/admin/users HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Authorization: Bearer <REPLACE_WITH_BOB_TOKEN>
+Accept: application/json

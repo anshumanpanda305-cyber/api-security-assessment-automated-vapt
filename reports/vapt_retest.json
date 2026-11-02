@@ -1,0 +1,17 @@
+{
+  "scan_metadata": {
+    "report_name": "API Security Assessment & Automated VAPT Framework Report",
+    "timestamp": "2026-11-02T16:02:21.110526Z",
+    "target_url": "http://127.0.0.1:5000",
+    "framework": "OWASP API Security Top 10",
+    "stats": {
+      "TOTAL": 0,
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 0,
+      "LOW": 0,
+      "INFO": 0
+    }
+  },
+  "findings": []
+}

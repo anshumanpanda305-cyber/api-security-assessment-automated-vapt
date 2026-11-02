@@ -1,0 +1,636 @@
+HTML_REPORT_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Security Assessment & VAPT Report</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #3b82f6;
+            --info: #64748b;
+            --success: #10b981;
+            --accent: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .title-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-item span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .meta-item strong {
+            font-size: 1rem;
+            color: #e2e8f0;
+        }
+
+        /* Severity Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #64748b;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-critical::before { background: var(--critical); }
+        .stat-high::before { background: var(--high); }
+        .stat-medium::before { background: var(--medium); }
+        .stat-low::before { background: var(--low); }
+        .stat-info::before { background: var(--info); }
+        .stat-total::before { background: var(--accent); }
+
+        .stat-num {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Controls: Filter & Search */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0f172a;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.75rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.875rem;
+            width: 220px;
+        }
+
+        /* Severity Badges */
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .badge-CRITICAL { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--critical); }
+        .badge-HIGH { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid var(--high); }
+        .badge-MEDIUM { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid var(--medium); }
+        .badge-LOW { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid var(--low); }
+        .badge-INFO { background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid var(--info); }
+        .badge-RESOLVED { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid var(--success); }
+
+        /* Findings List */
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .finding-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover {
+            border-color: #64748b;
+        }
+
+        .finding-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        .finding-header:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .finding-title-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .finding-id {
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .finding-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .toggle-icon {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-left: 0.75rem;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .finding-content {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: block; /* default open */
+        }
+
+        .finding-content.collapsed {
+            display: none;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .poc-box {
+            margin-top: 1rem;
+        }
+
+        .poc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.4rem;
+        }
+
+        .copy-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .copy-btn:hover { color: #fff; background: #334155; }
+
+        pre {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            color: #38bdf8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.825rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 1rem;
+        }
+
+        .callout-box {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+            font-size: 0.925rem;
+        }
+
+        .impact-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--critical);
+        }
+
+        .remediation-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .box-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-box .box-title { color: #f87171; }
+        .remediation-box .box-title { color: #34d399; }
+
+        footer {
+            margin-top: 3rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div>
+                    <div class="title-badge">Automated VAPT & API Security Assessment</div>
+                    <h1>{{ report_title }}</h1>
+                </div>
+                <div>
+                    <span class="badge badge-{{ overall_status }}">{{ overall_status }}</span>
+                </div>
+            </div>
+
+            <div class="metadata-grid">
+                <div class="meta-item">
+                    <span>Target URL</span>
+                    <strong>{{ target_url }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Scan Timestamp</span>
+                    <strong>{{ scan_time }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Scope Policy</span>
+                    <strong>Restricted to Localhost & Whitelist</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Assessment Framework</span>
+                    <strong>OWASP API Security Top 10</strong>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card stat-total" onclick="filterBySeverity('ALL')">
+                <div class="stat-label">Total Findings</div>
+                <div class="stat-num" style="color: var(--accent);">{{ counts.TOTAL }}</div>
+            </div>
+            <div class="stat-card stat-critical" onclick="filterBySeverity('CRITICAL')">
+                <div class="stat-label">Critical</div>
+                <div class="stat-num" style="color: var(--critical);">{{ counts.CRITICAL }}</div>
+            </div>
+            <div class="stat-card stat-high" onclick="filterBySeverity('HIGH')">
+                <div class="stat-label">High</div>
+                <div class="stat-num" style="color: var(--high);">{{ counts.HIGH }}</div>
+            </div>
+            <div class="stat-card stat-medium" onclick="filterBySeverity('MEDIUM')">
+                <div class="stat-label">Medium</div>
+                <div class="stat-num" style="color: var(--medium);">{{ counts.MEDIUM }}</div>
+            </div>
+            <div class="stat-card stat-low" onclick="filterBySeverity('LOW')">
+                <div class="stat-label">Low</div>
+                <div class="stat-num" style="color: var(--low);">{{ counts.LOW }}</div>
+            </div>
+            <div class="stat-card stat-info" onclick="filterBySeverity('INFO')">
+                <div class="stat-label">Info</div>
+                <div class="stat-num" style="color: var(--info);">{{ counts.INFO }}</div>
+            </div>
+        </div>
+
+        <!-- Controls: Filter & Search -->
+        <div class="controls-bar">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterBySeverity('ALL')">All ({{ counts.TOTAL }})</button>
+                <button class="filter-btn" onclick="filterBySeverity('CRITICAL')">Critical ({{ counts.CRITICAL }})</button>
+                <button class="filter-btn" onclick="filterBySeverity('HIGH')">High ({{ counts.HIGH }})</button>
+                <button class="filter-btn" onclick="filterBySeverity('MEDIUM')">Medium ({{ counts.MEDIUM }})</button>
+                <button class="filter-btn" onclick="filterBySeverity('LOW')">Low ({{ counts.LOW }})</button>
+                <button class="filter-btn" onclick="toggleAllCards()">Toggle Expand / Collapse All</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search vulnerability (e.g. SQL, BOLA)..." onkeyup="searchFindings()">
+            </div>
+        </div>
+
+        <!-- Findings List -->
+        <div class="section-header">
+            <span>Identified Vulnerabilities & Technical Evidence</span>
+            <span id="findingsCount" style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">Showing {{ findings|length }} items</span>
+        </div>
+
+        {% if not findings %}
+        <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 3rem; text-align: center; border-radius: 0.5rem;">
+            <div style="color: var(--success); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">✔ No Vulnerabilities Detected</div>
+            <p style="color: var(--text-muted);">The API endpoints successfully satisfied security policies, authorization guards, and input sanitization requirements.</p>
+        </div>
+        {% endif %}
+
+        {% for f in findings %}
+        <div class="finding-card" data-severity="{{ f.severity }}" data-search="{{ f.vuln_id }} {{ f.title }} {{ f.owasp_category }} {{ f.endpoint }}">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-{{ f.severity }}">{{ f.severity }}</span>
+                    <span class="finding-id">{{ f.vuln_id }}</span>
+                    <span class="finding-title">{{ f.title }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS {{ f.cvss_score }}</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>{{ f.owasp_category }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>{{ f.cwe_id }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>{{ f.method }} {{ f.endpoint }}</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">{{ f.cvss_vector }}</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">{{ f.description }}</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>{{ f.poc_request }}</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">{{ f.poc_response }}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>{{ f.business_impact }}</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">{{ f.remediation }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <footer>
+            API Security Assessment & Automated VAPT Framework &bull; Designed for Enterprise API Security & Compliance
+        </footer>
+    </div>
+
+    <script>
+        function toggleCard(headerElement) {
+            const card = headerElement.parentElement;
+            const content = card.querySelector('.finding-content');
+            const icon = headerElement.querySelector('.toggle-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+            }
+        }
+
+        let allCollapsed = false;
+        function toggleAllCards() {
+            allCollapsed = !allCollapsed;
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const content = card.querySelector('.finding-content');
+                const icon = card.querySelector('.toggle-icon');
+                if (allCollapsed) {
+                    content.classList.add('collapsed');
+                    icon.textContent = '▶';
+                } else {
+                    content.classList.remove('collapsed');
+                    icon.textContent = '▼';
+                }
+            });
+        }
+
+        function filterBySeverity(severity) {
+            // Update active button state
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.textContent.toUpperCase().includes(severity)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            let visibleCount = 0;
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const cardSev = card.getAttribute('data-severity');
+                if (severity === 'ALL' || cardSev === severity) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('findingsCount').textContent = 'Showing ' + visibleCount + ' items';
+        }
+
+        function searchFindings() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const searchContent = card.getAttribute('data-search').toLowerCase();
+                if (!query || searchContent.includes(query)) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('findingsCount').textContent = 'Showing ' + visibleCount + ' items';
+        }
+
+        function copyPoC(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            const text = pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
+"""

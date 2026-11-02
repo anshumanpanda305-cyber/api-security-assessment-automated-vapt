@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 520" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect width="950" height="520" rx="12" fill="url(#bg)" stroke="#334155" stroke-width="2"/>
+
+  <!-- Window Header -->
+  <rect width="950" height="42" rx="12" fill="#0b1120"/>
+  <circle cx="25" cy="21" r="6" fill="#ef4444"/>
+  <circle cx="45" cy="21" r="6" fill="#f59e0b"/>
+  <circle cx="65" cy="21" r="6" fill="#10b981"/>
+  <text x="475" y="26" fill="#94a3b8" font-size="13" font-family="-apple-system, sans-serif" font-weight="600" text-anchor="middle">API Security Assessment &amp; VAPT Framework — Security Dashboard</text>
+
+  <!-- Title Badge & Top Header -->
+  <rect x="30" y="62" width="220" height="24" rx="12" fill="#6366f1" fill-opacity="0.2" stroke="#6366f1" stroke-width="1"/>
+  <text x="140" y="78" fill="#a5b4fc" font-size="11" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">AUTOMATED VAPT REPORT</text>
+  
+  <text x="30" y="112" fill="#f8fafc" font-size="22" font-family="-apple-system, sans-serif" font-weight="800">ShopVault REST API Security Assessment</text>
+  <text x="30" y="132" fill="#94a3b8" font-size="12" font-family="-apple-system, sans-serif">Target: http://127.0.0.1:5000 &bull; Scope: Localhost Authorized &bull; Framework: OWASP API Security Top 10</text>
+
+  <!-- Risk Badge -->
+  <rect x="800" y="85" width="120" height="32" rx="6" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="860" y="106" fill="#fca5a5" font-size="12" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">CRITICAL RISK</text>
+
+  <!-- Stats Cards Grid -->
+  <!-- Total Card -->
+  <rect x="30" y="155" width="135" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="30" y="155" width="135" height="4" fill="#6366f1"/>
+  <text x="97" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">TOTAL FINDINGS</text>
+  <text x="97" y="215" fill="#818cf8" font-size="30" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">16</text>
+
+  <!-- Critical Card -->
+  <rect x="182" y="155" width="135" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="182" y="155" width="135" height="4" fill="#ef4444"/>
+  <text x="249" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">CRITICAL</text>
+  <text x="249" y="215" fill="#ef4444" font-size="30" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">6</text>
+
+  <!-- High Card -->
+  <rect x="334" y="155" width="135" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="334" y="155" width="135" height="4" fill="#f97316"/>
+  <text x="401" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">HIGH</text>
+  <text x="401" y="215" fill="#f97316" font-size="30" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">7</text>
+
+  <!-- Medium Card -->
+  <rect x="486" y="155" width="135" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="486" y="155" width="135" height="4" fill="#eab308"/>
+  <text x="553" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">MEDIUM</text>
+  <text x="553" y="215" fill="#eab308" font-size="30" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">1</text>
+
+  <!-- Low Card -->
+  <rect x="638" y="155" width="135" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="638" y="155" width="135" height="4" fill="#3b82f6"/>
+  <text x="705" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">LOW</text>
+  <text x="705" y="215" fill="#3b82f6" font-size="30" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">1</text>
+
+  <!-- Remediation Card -->
+  <rect x="790" y="155" width="130" height="85" rx="8" fill="url(#cardGrad)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="790" y="155" width="130" height="4" fill="#10b981"/>
+  <text x="855" y="178" fill="#94a3b8" font-size="10" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">REMEDIATION</text>
+  <text x="855" y="215" fill="#10b981" font-size="28" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">100%</text>
+
+  <!-- Sample Vulnerabilities List View -->
+  <text x="30" y="270" fill="#f8fafc" font-size="15" font-family="-apple-system, sans-serif" font-weight="700">Identified Vulnerabilities &amp; Proof-of-Concepts (PoC)</text>
+
+  <!-- Item 1: BOLA -->
+  <g transform="translate(30, 285)">
+    <rect width="890" height="60" rx="6" fill="#1e293b" stroke="#334155"/>
+    <rect x="15" y="16" width="70" height="26" rx="4" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444"/>
+    <text x="50" y="33" fill="#fca5a5" font-size="11" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">CRITICAL</text>
+    <text x="100" y="34" fill="#94a3b8" font-size="12" font-family="monospace">VAPT-BOLA-001</text>
+    <text x="215" y="34" fill="#f8fafc" font-size="13" font-family="-apple-system, sans-serif" font-weight="600">Broken Object Level Authorization (BOLA) in Document Retrieval</text>
+    <text x="680" y="34" fill="#64748b" font-size="12" font-family="monospace">GET /api/v1/documents/{id}</text>
+    <rect x="830" y="18" width="45" height="24" rx="4" fill="#312e81"/>
+    <text x="852" y="34" fill="#c7d2fe" font-size="11" font-family="monospace" font-weight="700" text-anchor="middle">8.6</text>
+  </g>
+
+  <!-- Item 2: JWT None Alg -->
+  <g transform="translate(30, 355)">
+    <rect width="890" height="60" rx="6" fill="#1e293b" stroke="#334155"/>
+    <rect x="15" y="16" width="70" height="26" rx="4" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444"/>
+    <text x="50" y="33" fill="#fca5a5" font-size="11" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">CRITICAL</text>
+    <text x="100" y="34" fill="#94a3b8" font-size="12" font-family="monospace">VAPT-AUTH-001</text>
+    <text x="215" y="34" fill="#f8fafc" font-size="13" font-family="-apple-system, sans-serif" font-weight="600">JWT Signature Bypass via Unsigned 'alg: none' Algorithm</text>
+    <text x="680" y="34" fill="#64748b" font-size="12" font-family="monospace">Protected Endpoints</text>
+    <rect x="830" y="18" width="45" height="24" rx="4" fill="#312e81"/>
+    <text x="852" y="34" fill="#c7d2fe" font-size="11" font-family="monospace" font-weight="700" text-anchor="middle">9.8</text>
+  </g>
+
+  <!-- Item 3: SQL Injection -->
+  <g transform="translate(30, 425)">
+    <rect width="890" height="60" rx="6" fill="#1e293b" stroke="#334155"/>
+    <rect x="15" y="16" width="70" height="26" rx="4" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444"/>
+    <text x="50" y="33" fill="#fca5a5" font-size="11" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">CRITICAL</text>
+    <text x="100" y="34" fill="#94a3b8" font-size="12" font-family="monospace">VAPT-SQLI-001</text>
+    <text x="215" y="34" fill="#f8fafc" font-size="13" font-family="-apple-system, sans-serif" font-weight="600">SQL Injection in Product Search Parameter ('q')</text>
+    <text x="680" y="34" fill="#64748b" font-size="12" font-family="monospace">GET /api/v1/products/search</text>
+    <rect x="830" y="18" width="45" height="24" rx="4" fill="#312e81"/>
+    <text x="852" y="34" fill="#c7d2fe" font-size="11" font-family="monospace" font-weight="700" text-anchor="middle">9.8</text>
+  </g>
+
+  <!-- Footer Info -->
+  <text x="475" y="505" fill="#64748b" font-size="11" font-family="-apple-system, sans-serif" text-anchor="middle">Verified zero false positives &bull; Full remediation verified with Automated Retest Engine</text>
+</svg>

